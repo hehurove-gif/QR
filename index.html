@@ -1,103 +1,13 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Generador avanzado de QR con logo, degradados y exportación." />
     <title>QR Designer Pro</title>
-    <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
-    <div class="app-shell">
-      <aside class="panel controls-panel">
-        <h1>QR Designer Pro</h1>
-
-        <div class="field">
-          <label for="linkInput">URL / Link</label>
-          <input id="linkInput" type="text" value="https://github.com" placeholder="https://ejemplo.com" />
-        </div>
-
-        <div class="field">
-          <label for="logoUrlInput">Logo desde URL (opcional)</label>
-          <input id="logoUrlInput" type="text" placeholder="https://..." />
-        </div>
-
-        <div class="field">
-          <label for="logoInput">Subir imagen del centro</label>
-          <input id="logoInput" type="file" accept="image/*" />
-        </div>
-
-        <div class="field">
-          <label>Colores del QR</label>
-          <div class="color-grid">
-            <input id="color1" type="color" value="#111827" />
-            <input id="color2" type="color" value="#0ea5e9" />
-            <input id="color3" type="color" value="#8b5cf6" />
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="bgColor">Color de fondo</label>
-          <input id="bgColor" type="color" value="#ffffff" />
-        </div>
-
-        <div class="field">
-          <label class="checkbox-row">
-            <input id="transparentBg" type="checkbox" />
-            <span>Fondo transparente</span>
-          </label>
-        </div>
-
-        <div class="inline-grid">
-          <div class="field">
-            <label for="sizeInput">Tamaño</label>
-            <input id="sizeInput" type="number" min="200" max="1200" step="10" value="540" />
-          </div>
-          <div class="field">
-            <label for="marginInput">Margen</label>
-            <input id="marginInput" type="number" min="0" max="80" step="1" value="18" />
-          </div>
-        </div>
-
-        <div class="inline-grid">
-          <div class="field">
-            <label for="styleSelect">Estilo del módulo</label>
-            <select id="styleSelect">
-              <option value="square">Cuadrado</option>
-              <option value="rounded">Redondeado</option>
-              <option value="circle">Circular</option>
-              <option value="soft">Suave</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="formatSelect">Formato de descarga</label>
-            <select id="formatSelect">
-              <option value="png">PNG</option>
-              <option value="jpeg">JPG</option>
-              <option value="webp">WEBP</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="button-row">
-          <button class="primary" id="generateBtn">Generar QR</button>
-          <button class="secondary" id="downloadBtn">Descargar</button>
-        </div>
-
-        <div class="button-row">
-          <button class="ghost" id="copyBtn">Copiar imagen</button>
-        </div>
-      </aside>
-
-      <main class="panel preview-panel">
-        <div class="canvas-wrap">
-          <canvas id="qrCanvas" width="540" height="540"></canvas>
-        </div>
-        <div class="preview-label">Vista previa</div>
-      </main>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.5.1/qrcode.min.js"></script>
-    <script src="script.js"></script>
+  <body class="bg-slate-950">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
