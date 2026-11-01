@@ -111,8 +111,8 @@ const drawCenterLogo = (ctx, img, totalSize) => {
 
 function App() {
   const canvasRef = useRef(null);
+  const fileInputRef = useRef(null);
   const [link, setLink] = useState('https://github.com');
-  const [logoUrl, setLogoUrl] = useState('');
   const [bgColor, setBgColor] = useState('#ffffff');
   const [transparentBg, setTransparentBg] = useState(false);
   const [size, setSize] = useState(540);
@@ -191,21 +191,9 @@ function App() {
     reader.readAsDataURL(file);
   };
 
-  const handleLogoUrl = () => {
-    const currentUrl = logoUrl.trim();
-    if (!currentUrl) {
-      setLogoImage(null);
-      return;
-    }
-
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => setLogoImage(img);
-    img.onerror = () => {
-      alert('No se pudo cargar la imagen desde la URL.');
-      setLogoImage(null);
-    };
-    img.src = currentUrl;
+  const clearLogo = () => {
+    setLogoImage(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const downloadImage = () => {
@@ -288,20 +276,20 @@ function App() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-300">Logo desde URL</label>
+                <div className="mb-2 flex items-center justify-between">
+                  <label className="block text-sm font-medium text-slate-300">Subir imagen del centro</label>
+                  {logoImage && (
+                    <button
+                      type="button"
+                      onClick={clearLogo}
+                      className="text-xs font-semibold text-rose-300 transition hover:text-rose-200"
+                    >
+                      Quitar logo
+                    </button>
+                  )}
+                </div>
                 <input
-                  type="text"
-                  value={logoUrl}
-                  onChange={(e) => setLogoUrl(e.target.value)}
-                  onBlur={handleLogoUrl}
-                  className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2.5 text-sm text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
-                  placeholder="https://..."
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-300">Subir imagen del centro</label>
-                <input
+                  ref={fileInputRef}
                   type="file"
                   accept="image/*"
                   onChange={handleFileUpload}
@@ -409,27 +397,19 @@ function App() {
             <div className="mt-5 grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={renderQRCode}
-                className="rounded-2xl bg-gradient-to-r from-sky-500 via-blue-500 to-violet-600 px-4 py-3 font-semibold text-white shadow-[0_12px_28px_rgba(59,130,246,0.45)] transition hover:scale-[1.01] hover:brightness-110"
-              >
-                Generar QR
-              </button>
-              <button
-                type="button"
                 onClick={downloadImage}
                 className="rounded-2xl bg-gradient-to-r from-emerald-500 via-cyan-500 to-sky-500 px-4 py-3 font-semibold text-white shadow-[0_12px_28px_rgba(16,185,129,0.4)] transition hover:scale-[1.01] hover:brightness-110"
               >
                 Descargar
               </button>
+              <button
+                type="button"
+                onClick={copyImage}
+                className="rounded-2xl border border-slate-700/80 bg-slate-900/90 px-4 py-3 font-semibold text-slate-100 transition hover:border-sky-500/60 hover:bg-slate-800"
+              >
+                Copiar imagen
+              </button>
             </div>
-
-            <button
-              type="button"
-              onClick={copyImage}
-              className="mt-3 w-full rounded-2xl border border-slate-700/80 bg-slate-900/90 px-4 py-3 font-semibold text-slate-100 transition hover:border-sky-500/60 hover:bg-slate-800"
-            >
-              Copiar imagen
-            </button>
           </aside>
 
           <main className="panel-glass rounded-[32px] p-4 sm:p-5">
