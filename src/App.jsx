@@ -122,7 +122,7 @@ function App() {
   const [colors, setColors] = useState(['#111827', '#0ea5e9', '#8b5cf6']);
   const [logoImage, setLogoImage] = useState(null);
 
-  useEffect(() => {
+  const renderQRCode = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -172,6 +172,10 @@ function App() {
     if (logoImage) {
       drawCenterLogo(ctx, logoImage, canvasSize);
     }
+  };
+
+  useEffect(() => {
+    renderQRCode();
   }, [link, bgColor, transparentBg, size, margin, style, colors, logoImage]);
 
   const handleFileUpload = (event) => {
@@ -215,10 +219,10 @@ function App() {
     };
 
     const extension = format === 'jpeg' ? 'jpg' : format;
-    const link = document.createElement('a');
-    link.download = `qr-custom.${extension}`;
-    link.href = canvas.toDataURL(mimeTypes[format], 0.98);
-    link.click();
+    const linkTag = document.createElement('a');
+    linkTag.download = `qr-custom.${extension}`;
+    linkTag.href = canvas.toDataURL(mimeTypes[format], 0.98);
+    linkTag.click();
   };
 
   const copyImage = async () => {
@@ -247,215 +251,225 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-10 text-slate-100">
-      <div className="mx-auto grid max-w-6xl gap-6 rounded-3xl border border-slate-700/80 bg-slate-900/70 p-4 shadow-2xl shadow-slate-950/40 backdrop-blur xl:grid-cols-[420px_minmax(0,1fr)]">
-        <aside className="rounded-2xl border border-slate-700/80 bg-slate-900/80 p-5">
-          <h1 className="mb-5 text-3xl font-bold tracking-tight">QR Designer Pro</h1>
-
-          <div className="mb-4">
-            <label className="mb-2 block text-sm font-semibold text-slate-300">URL / Link</label>
-            <input
-              type="text"
-              value={link}
-              onChange={(e) => setLink(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2.5 text-sm text-white outline-none placeholder:text-slate-500 focus:border-sky-500"
-              placeholder="https://ejemplo.com"
-            />
+    <div className="min-h-screen px-4 py-10 text-slate-50">
+      <div className="mx-auto max-w-7xl">
+        <header className="mb-6 flex flex-col gap-4 rounded-[28px] border border-white/10 bg-white/5 px-5 py-5 shadow-[0_20px_80px_rgba(15,23,42,0.38)] backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-300">QR Studio</p>
+            <h1 className="mt-2 text-3xl font-black tracking-tight text-white">Diseña tu QR premium</h1>
           </div>
-
-          <div className="mb-4">
-            <label className="mb-2 block text-sm font-semibold text-slate-300">Logo desde URL</label>
-            <input
-              type="text"
-              value={logoUrl}
-              onChange={(e) => setLogoUrl(e.target.value)}
-              onBlur={handleLogoUrl}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2.5 text-sm text-white outline-none placeholder:text-slate-500 focus:border-sky-500"
-              placeholder="https://..."
-            />
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-300">
+              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              Ready to export
+            </span>
           </div>
+        </header>
 
-          <div className="mb-4">
-            <label className="mb-2 block text-sm font-semibold text-slate-300">Subir imagen del centro</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileUpload}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2.5 text-sm text-slate-200 file:mr-3 file:rounded-md file:border-0 file:bg-sky-600 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
-            />
-          </div>
+        <div className="grid gap-6 xl:grid-cols-[440px_minmax(0,1fr)]">
+          <aside className="panel-glass rounded-[28px] p-5">
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-white">Personalización</h2>
+              <span className="rounded-full border border-sky-400/30 bg-sky-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-sky-300">
+                Live
+              </span>
+            </div>
 
-          <div className="mb-4">
-            <label className="mb-2 block text-sm font-semibold text-slate-300">Colores del QR</label>
-            <div className="grid grid-cols-3 gap-3">
-              {colors.map((color, index) => (
+            <div className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-300">URL / Link</label>
                 <input
-                  key={index}
-                  type="color"
-                  value={color}
-                  onChange={(e) => updateColor(index, e.target.value)}
-                  className="h-12 w-full cursor-pointer rounded-xl border border-slate-700 bg-transparent p-1"
+                  type="text"
+                  value={link}
+                  onChange={(e) => setLink(e.target.value)}
+                  className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2.5 text-sm text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
+                  placeholder="https://ejemplo.com"
                 />
-              ))}
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-300">Logo desde URL</label>
+                <input
+                  type="text"
+                  value={logoUrl}
+                  onChange={(e) => setLogoUrl(e.target.value)}
+                  onBlur={handleLogoUrl}
+                  className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2.5 text-sm text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
+                  placeholder="https://..."
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-300">Subir imagen del centro</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2.5 text-sm text-slate-200 file:mr-3 file:rounded-xl file:border-0 file:bg-sky-600 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-300">Paleta del QR</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {colors.map((color, index) => (
+                    <input
+                      key={index}
+                      type="color"
+                      value={color}
+                      onChange={(e) => updateColor(index, e.target.value)}
+                      className="h-12 w-full cursor-pointer rounded-xl border border-slate-700/80 bg-transparent p-1"
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-300">Fondo</label>
+                  <input
+                    type="color"
+                    value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    className="h-12 w-full cursor-pointer rounded-xl border border-slate-700/80 bg-transparent p-1"
+                  />
+                </div>
+
+                <div className="flex items-end">
+                  <label className="flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-700/80 bg-slate-950/60 px-3 py-3 text-sm text-slate-200">
+                    <input
+                      type="checkbox"
+                      checked={transparentBg}
+                      onChange={(e) => setTransparentBg(e.target.checked)}
+                      className="h-4 w-4 accent-sky-500"
+                    />
+                    Transparente
+                  </label>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-300">Tamaño</label>
+                  <input
+                    type="number"
+                    min="200"
+                    max="1200"
+                    step="10"
+                    value={size}
+                    onChange={(e) => setSize(Number(e.target.value))}
+                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2.5 text-sm text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-300">Margen</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="80"
+                    step="1"
+                    value={margin}
+                    onChange={(e) => setMargin(Number(e.target.value))}
+                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2.5 text-sm text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-300">Módulo</label>
+                  <select
+                    value={style}
+                    onChange={(e) => setStyle(e.target.value)}
+                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2.5 text-sm text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
+                  >
+                    <option value="square">Cuadrado</option>
+                    <option value="rounded">Redondeado</option>
+                    <option value="circle">Circular</option>
+                    <option value="soft">Suave</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-300">Formato</label>
+                  <select
+                    value={format}
+                    onChange={(e) => setFormat(e.target.value)}
+                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2.5 text-sm text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
+                  >
+                    <option value="png">PNG</option>
+                    <option value="jpeg">JPG</option>
+                    <option value="webp">WEBP</option>
+                  </select>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div className="mb-4">
-            <label className="mb-2 block text-sm font-semibold text-slate-300">Color de fondo</label>
-            <input
-              type="color"
-              value={bgColor}
-              onChange={(e) => setBgColor(e.target.value)}
-              className="h-12 w-full cursor-pointer rounded-xl border border-slate-700 bg-transparent p-1"
-            />
-          </div>
-
-          <label className="mb-4 flex items-center gap-3 text-sm font-medium text-slate-300">
-            <input
-              type="checkbox"
-              checked={transparentBg}
-              onChange={(e) => setTransparentBg(e.target.checked)}
-              className="h-4 w-4 accent-sky-500"
-            />
-            Fondo transparente
-          </label>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="mb-4">
-              <label className="mb-2 block text-sm font-semibold text-slate-300">Tamaño</label>
-              <input
-                type="number"
-                min="200"
-                max="1200"
-                step="10"
-                value={size}
-                onChange={(e) => setSize(Number(e.target.value))}
-                className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2.5 text-sm text-white outline-none focus:border-sky-500"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="mb-2 block text-sm font-semibold text-slate-300">Margen</label>
-              <input
-                type="number"
-                min="0"
-                max="80"
-                step="1"
-                value={margin}
-                onChange={(e) => setMargin(Number(e.target.value))}
-                className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2.5 text-sm text-white outline-none focus:border-sky-500"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="mb-4">
-              <label className="mb-2 block text-sm font-semibold text-slate-300">Estilo</label>
-              <select
-                value={style}
-                onChange={(e) => setStyle(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2.5 text-sm text-white outline-none focus:border-sky-500"
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={renderQRCode}
+                className="rounded-2xl bg-gradient-to-r from-sky-500 via-blue-500 to-violet-600 px-4 py-3 font-semibold text-white shadow-[0_12px_28px_rgba(59,130,246,0.45)] transition hover:scale-[1.01] hover:brightness-110"
               >
-                <option value="square">Cuadrado</option>
-                <option value="rounded">Redondeado</option>
-                <option value="circle">Circular</option>
-                <option value="soft">Suave</option>
-              </select>
-            </div>
-
-            <div className="mb-4">
-              <label className="mb-2 block text-sm font-semibold text-slate-300">Formato</label>
-              <select
-                value={format}
-                onChange={(e) => setFormat(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2.5 text-sm text-white outline-none focus:border-sky-500"
+                Generar QR
+              </button>
+              <button
+                type="button"
+                onClick={downloadImage}
+                className="rounded-2xl bg-gradient-to-r from-emerald-500 via-cyan-500 to-sky-500 px-4 py-3 font-semibold text-white shadow-[0_12px_28px_rgba(16,185,129,0.4)] transition hover:scale-[1.01] hover:brightness-110"
               >
-                <option value="png">PNG</option>
-                <option value="jpeg">JPG</option>
-                <option value="webp">WEBP</option>
-              </select>
+                Descargar
+              </button>
             </div>
-          </div>
 
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                const sanitized = link.trim();
-                if (!sanitized) {
-                  alert('Escribe una URL o link antes de generar el QR.');
-                  return;
-                }
-                const canvas = canvasRef.current;
-                if (!canvas) return;
-                const ctx = canvas.getContext('2d');
-                const safeLink = sanitized;
-                const qr = qrcode(0, 'M');
-                qr.addData(safeLink);
-                qr.make();
-                const canvasSize = clamp(Number(size) || 540, 200, 1200);
-                const padding = clamp(Number(margin) || 18, 0, 100);
-                const moduleCount = qr.getModuleCount();
-                const effective = canvasSize - padding * 2;
-                const block = effective / moduleCount;
-
-                canvas.width = canvasSize;
-                canvas.height = canvasSize;
-                if (!transparentBg) {
-                  ctx.clearRect(0, 0, canvasSize, canvasSize);
-                  ctx.fillStyle = bgColor;
-                  ctx.fillRect(0, 0, canvasSize, canvasSize);
-                } else {
-                  ctx.clearRect(0, 0, canvasSize, canvasSize);
-                }
-
-                for (let row = 0; row < moduleCount; row++) {
-                  for (let col = 0; col < moduleCount; col++) {
-                    if (!qr.isDark(row, col)) continue;
-                    const x = padding + col * block;
-                    const y = padding + row * block;
-                    const color = getGradientColor(x + block / 2, y + block / 2, canvasSize, canvasSize, colors);
-                    drawModule(ctx, x, y, block, style, color);
-                  }
-                }
-
-                if (logoImage) {
-                  drawCenterLogo(ctx, logoImage, canvasSize);
-                }
-              }}
-              className="rounded-xl bg-gradient-to-r from-sky-500 to-violet-600 px-4 py-3 font-semibold text-white shadow-lg shadow-sky-900/30 transition hover:brightness-110"
-            >
-              Generar QR
-            </button>
-
-            <button
-              type="button"
-              onClick={downloadImage}
-              className="rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 px-4 py-3 font-semibold text-white shadow-lg shadow-emerald-900/30 transition hover:brightness-110"
-            >
-              Descargar
-            </button>
-          </div>
-
-          <div className="mt-3">
             <button
               type="button"
               onClick={copyImage}
-              className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 font-semibold text-slate-100 transition hover:bg-slate-700"
+              className="mt-3 w-full rounded-2xl border border-slate-700/80 bg-slate-900/90 px-4 py-3 font-semibold text-slate-100 transition hover:border-sky-500/60 hover:bg-slate-800"
             >
               Copiar imagen
             </button>
-          </div>
-        </aside>
+          </aside>
 
-        <main className="flex min-h-[620px] items-center justify-center rounded-2xl border border-slate-700/80 bg-slate-900/80 p-5">
-          <div className="flex w-full max-w-[620px] flex-col items-center justify-center gap-4">
-            <div className="grid w-full place-items-center rounded-3xl border border-slate-700 bg-[linear-gradient(45deg,rgba(255,255,255,0.05)_25%,transparent_25%,transparent_75%,rgba(255,255,255,0.05)_75%),linear-gradient(45deg,rgba(255,255,255,0.05)_25%,transparent_25%,transparent_75%,rgba(255,255,255,0.05)_75%)] bg-[length:28px_28px] p-5">
-              <canvas ref={canvasRef} className="max-h-[560px] w-full max-w-[560px] rounded-2xl bg-white shadow-[0_16px_32px_rgba(15,23,42,0.35)]" />
+          <main className="panel-glass rounded-[32px] p-4 sm:p-5">
+            <div className="mb-4 flex items-center justify-between px-1">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.26em] text-slate-400">Preview</p>
+                <h3 className="mt-1 text-xl font-bold text-white">Vista previa en tiempo real</h3>
+              </div>
+              <div className="flex gap-2">
+                <span className="rounded-full border border-violet-400/30 bg-violet-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-300">
+                  {format.toUpperCase()}
+                </span>
+                <span className="rounded-full border border-sky-400/30 bg-sky-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-300">
+                  {transparentBg ? 'Transparent' : 'Solid'}
+                </span>
+              </div>
             </div>
-            <div className="text-sm text-slate-400">Vista previa</div>
-          </div>
-        </main>
+
+            <div className="preview-shell rounded-[28px] p-3 sm:p-5">
+              <div className="preview-card">
+                <canvas ref={canvasRef} className="qr-canvas" />
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              <div className="metric-card">
+                <span className="metric-label">Tamaño</span>
+                <strong>{size}px</strong>
+              </div>
+              <div className="metric-card">
+                <span className="metric-label">Margen</span>
+                <strong>{margin}px</strong>
+              </div>
+              <div className="metric-card">
+                <span className="metric-label">Estilo</span>
+                <strong>{style}</strong>
+              </div>
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   );
