@@ -1,113 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import qrcode from 'qrcode-generator';
-
-const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
-
-const hexToRgb = (hex) => {
-  const clean = hex.replace('#', '');
-  const full = clean.length === 3 ? clean.split('').map((ch) => ch + ch).join('') : clean;
-  const num = parseInt(full, 16);
-  return {
-    r: (num >> 16) & 255,
-    g: (num >> 8) & 255,
-    b: num & 255,
-  };
-};
-
-const rgbToHex = (r, g, b) => {
-  const toHex = (value) => value.toString(16).padStart(2, '0');
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-};
-
-const interpolateColor = (hexA, hexB, t) => {
-  const a = hexToRgb(hexA);
-  const b = hexToRgb(hexB);
-  const r = Math.round(a.r + (b.r - a.r) * t);
-  const g = Math.round(a.g + (b.g - a.g) * t);
-  const blue = Math.round(a.b + (b.b - a.b) * t);
-  return rgbToHex(r, g, blue);
-};
-
-const getGradientColor = (x, y, width, height, colors) => {
-  const validColors = colors.filter(Boolean);
-  if (!validColors.length) return '#111827';
-  if (validColors.length === 1) return validColors[0];
-
-  const nx = x / width;
-  const ny = y / height;
-  const t = clamp((nx + ny) / 2, 0, 1);
-
-  if (validColors.length === 2) {
-    return interpolateColor(validColors[0], validColors[1], t);
-  }
-
-  const segments = validColors.length - 1;
-  const segment = clamp(t * segments, 0, segments - 0.0001);
-  const index = Math.floor(segment);
-  const localT = segment - index;
-  return interpolateColor(validColors[index], validColors[index + 1], localT);
-};
-
-const roundedRectPath = (ctx, x, y, w, h, r) => {
-  const radius = Math.min(r, w / 2, h / 2);
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.lineTo(x + w - radius, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
-  ctx.lineTo(x + w, y + h - radius);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
-  ctx.lineTo(x + radius, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
-  ctx.lineTo(x, y + radius);
-  ctx.quadraticCurveTo(x, y, x + radius, y);
-  ctx.closePath();
-};
-
-const drawModule = (ctx, x, y, size, shape, color) => {
-  ctx.fillStyle = color;
-
-  if (shape === 'square') {
-    ctx.fillRect(x, y, size, size);
-    return;
-  }
-
-  if (shape === 'rounded') {
-    const pad = size * 0.18;
-    roundedRectPath(ctx, x + pad / 2, y + pad / 2, size - pad, size - pad, size * 0.45);
-    ctx.fill();
-    return;
-  }
-
-  if (shape === 'circle') {
-    ctx.beginPath();
-    ctx.arc(x + size / 2, y + size / 2, size / 2.15, 0, Math.PI * 2);
-    ctx.fill();
-    return;
-  }
-
-  const inset = size * 0.24;
-  roundedRectPath(ctx, x + inset, y + inset, size - inset * 2, size - inset * 2, size * 0.38);
-  ctx.fill();
-};
-
-const drawCenterLogo = (ctx, img, totalSize) => {
-  if (!img) return;
-
-  const logoSize = totalSize * 0.24;
-  const x = (totalSize - logoSize) / 2;
-  const y = (totalSize - logoSize) / 2;
-
-  ctx.save();
-  ctx.fillStyle = 'rgba(255,255,255,0.96)';
-  roundedRectPath(ctx, x - 8, y - 8, logoSize + 16, logoSize + 16, 26);
-  ctx.fill();
-
-  ctx.beginPath();
-  roundedRectPath(ctx, x, y, logoSize, logoSize, 18);
-  ctx.clip();
-  ctx.drawImage(img, x, y, logoSize, logoSize);
-  ctx.restore();
-};
+import { drawQR, getScanWarning } from './qrRender';
 
 function App() {
   const canvasRef = useRef(null);
@@ -117,66 +9,20 @@ function App() {
   const [transparentBg, setTransparentBg] = useState(false);
   const [size, setSize] = useState(540);
   const [margin, setMargin] = useState(18);
-  const [style, setStyle] = useState('rounded');
+  const [shape, setShape] = useState('square');
   const [format, setFormat] = useState('png');
-  const [colors, setColors] = useState(['#111827', '#0ea5e9', '#8b5cf6']);
+  const [colors, setColors] = useState(['#0f172a', '#0369a1', '#6d28d9']);
   const [logoImage, setLogoImage] = useState(null);
 
-  const renderQRCode = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    const safeLink = link.trim();
-    if (!safeLink) return;
-
-    const qr = qrcode(0, 'M');
-    qr.addData(safeLink);
-    qr.make();
-
-    const canvasSize = clamp(Number(size) || 540, 200, 1200);
-    const padding = clamp(Number(margin) || 18, 0, 100);
-    const moduleCount = qr.getModuleCount();
-    const effective = canvasSize - padding * 2;
-    const block = effective / moduleCount;
-
-    canvas.width = canvasSize;
-    canvas.height = canvasSize;
-
-    if (!transparentBg) {
-      ctx.clearRect(0, 0, canvasSize, canvasSize);
-      ctx.fillStyle = bgColor;
-      ctx.fillRect(0, 0, canvasSize, canvasSize);
-    } else {
-      ctx.clearRect(0, 0, canvasSize, canvasSize);
-    }
-
-    for (let row = 0; row < moduleCount; row++) {
-      for (let col = 0; col < moduleCount; col++) {
-        if (!qr.isDark(row, col)) continue;
-
-        const x = padding + col * block;
-        const y = padding + row * block;
-        const color = getGradientColor(
-          x + block / 2,
-          y + block / 2,
-          canvasSize,
-          canvasSize,
-          colors
-        );
-
-        drawModule(ctx, x, y, block, style, color);
-      }
-    }
-
-    if (logoImage) {
-      drawCenterLogo(ctx, logoImage, canvasSize);
-    }
-  };
-
   useEffect(() => {
-    renderQRCode();
-  }, [link, bgColor, transparentBg, size, margin, style, colors, logoImage]);
+    try {
+      drawQR(canvasRef.current, { link, bgColor, transparentBg, size, margin, shape, colors, logoImage });
+    } catch (error) {
+      // Texto demasiado largo para un QR: se conserva el último dibujo válido.
+    }
+  }, [link, bgColor, transparentBg, size, margin, shape, colors, logoImage]);
+
+  const scanWarning = getScanWarning(colors, bgColor, transparentBg);
 
   const handleFileUpload = (event) => {
     const file = event.target.files?.[0];
@@ -206,10 +52,22 @@ function App() {
       webp: 'image/webp',
     };
 
+    let source = canvas;
+    if (format === 'jpeg') {
+      // JPG no admite transparencia: se pinta sobre blanco para evitar esquinas negras.
+      source = document.createElement('canvas');
+      source.width = canvas.width;
+      source.height = canvas.height;
+      const flat = source.getContext('2d');
+      flat.fillStyle = '#ffffff';
+      flat.fillRect(0, 0, source.width, source.height);
+      flat.drawImage(canvas, 0, 0);
+    }
+
     const extension = format === 'jpeg' ? 'jpg' : format;
     const linkTag = document.createElement('a');
     linkTag.download = `qr-custom.${extension}`;
-    linkTag.href = canvas.toDataURL(mimeTypes[format], 0.98);
+    linkTag.href = source.toDataURL(mimeTypes[format], 0.98);
     linkTag.click();
   };
 
@@ -312,6 +170,12 @@ function App() {
                 </div>
               </div>
 
+              {scanWarning && (
+                <p className="rounded-2xl border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                  {scanWarning}
+                </p>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-slate-300">Fondo</label>
@@ -366,16 +230,17 @@ function App() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">Módulo</label>
+                  <label className="mb-2 block text-sm font-medium text-slate-300">Forma del QR</label>
                   <select
-                    value={style}
-                    onChange={(e) => setStyle(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2.5 text-sm text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
+                    value={shape}
+                    onChange={(e) => setShape(e.target.value)}
+                    disabled={transparentBg}
+                    title={transparentBg ? 'Con fondo transparente no hay contorno visible' : undefined}
+                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2.5 text-sm text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="square">Cuadrado</option>
                     <option value="rounded">Redondeado</option>
                     <option value="circle">Circular</option>
-                    <option value="soft">Suave</option>
                   </select>
                 </div>
 
@@ -444,8 +309,8 @@ function App() {
                 <strong>{margin}px</strong>
               </div>
               <div className="metric-card">
-                <span className="metric-label">Estilo</span>
-                <strong>{style}</strong>
+                <span className="metric-label">Forma</span>
+                <strong>{{ square: 'Cuadrado', rounded: 'Redondeado', circle: 'Circular' }[shape]}</strong>
               </div>
             </div>
           </main>
